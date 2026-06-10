@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security-playground
+  labels:
+    app.kubernetes.io/instance: security-playground
+    app.kubernetes.io/name: security-playground
+    app: security-playground
