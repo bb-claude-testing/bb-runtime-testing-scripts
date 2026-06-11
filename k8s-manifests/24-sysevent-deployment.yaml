@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sysevent
+  namespace: sysevent
+  labels:
+    app: sysevent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sysevent
+  template:
+    metadata:
+      labels:
+        app: sysevent
+    spec:
+      containers:
+        - name: sysevent
+          image: marcelsysdig/sysevent:2.0.0
+          imagePullPolicy: Always
+          env:
+            # Auto-rotation sleep window (only used if the pod is un-paused).
+            - name: minsleep
+              value: "14400"
+            - name: maxsleep
+              value: "28800"
+            # ON-DEMAND model: start PAUSED so the pod never fires tests on its
+            # own. The bastion runner (scripts/sysevent/run.sh) triggers each
+            # test explicitly via `kubectl exec`. Set to "false" if you instead
+            # want the pod to auto-fire tests on the minsleep/maxsleep schedule.
+            - name: pauseonstart
+              value: "true"
+            # Keep the in-pod Apache server running: the web UI is served on :80
+            # (exposed by the LoadBalancer Service) and two tests
+            # (netcat_remote_code_execution, webserver_writing_to_non-allowed_dir)
+            # POST to http://localhost/low.php inside the pod.
+            - name: noweb
+              value: "false"
+          securityContext:
+            allowPrivilegeEscalation: false
+      restartPolicy: Always
