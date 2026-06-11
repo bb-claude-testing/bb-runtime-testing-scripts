@@ -12,6 +12,24 @@ theft, etc.) so the threat-detection policies can be exercised end-to-end.
 > ⚠️ These are deliberate **attack-simulation** scripts. Run them only inside
 > the workshop's throwaway cluster/containers — never on a real host.
 
+## Running them (the easy way)
+
+A dedicated `sysevent` pod is deployed by `k8s-manifests/` (files `23`–`25`); it
+starts **paused** so it never fires on its own. From the bastion, use the helper:
+
+```bash
+cd ~/sysevent
+./run.sh list                           # list all tests
+./run.sh reverse_shell_detected_python  # run one
+./run.sh all                            # all single-action tests
+./run.sh chains                         # the 7-stage + 10-stage chains
+./run.sh everything                     # all of the above
+```
+
+Then watch detections in **Sysdig → Threats/Events**, filtered to
+`kubernetes.namespace.name = "sysevent"`. See the repo-root `README.md` for a
+plain-language explanation of every test.
+
 ## Catalog
 
 Severity: **m** = medium, **h** = high. `ms` = multi-stage chain.

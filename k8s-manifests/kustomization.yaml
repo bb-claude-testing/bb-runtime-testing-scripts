@@ -23,3 +23,6 @@ resources:
   - 20-security-playground-restricted-nomalware-namespace.yaml
   - 21-security-playground-restricted-nomalware-deployment.yaml
   - 22-security-playground-restricted-nomalware-service.yaml
+  - 23-sysevent-namespace.yaml
+  - 24-sysevent-deployment.yaml
+  - 25-sysevent-service.yaml
