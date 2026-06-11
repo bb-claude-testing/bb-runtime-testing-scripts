@@ -61,10 +61,42 @@ The robot starts **asleep** 😴 (we set `pauseonstart: "true"`), so it never do
 anything by surprise. *You* wake it up and tell it which trick to do. That way
 **you** decide exactly when each camera-beep happens.
 
-### ▶️ How to make the robot do a trick (from the bastion)
+There are **two ways** to make the robot do a trick. Way 1 is the easiest and the
+best for showing a friend — you just click buttons in a web page! 🖱️
 
-In the control room (the bastion), there's a helper button: **`run.sh`** (it lives
-in `scripts/sysevent/`, and the bastion copies it to `~/sysevent/run.sh`).
+### ▶️ Way 1 (easiest!): the robot's web page 🖥️
+
+The robot has its very own **web page** with a big list of all 33 tricks. You
+click a trick, and it does it right away while you watch the words appear on the
+screen — like a magic show. 🎩
+
+**How to open it:**
+
+1. First, ask the city for the robot's web address. In the control room (bastion),
+   as root, type:
+   ```bash
+   kubectl get svc -n sysevent sysevent \
+     -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'; echo
+   ```
+   That prints a long web address (it can take a minute or two to appear right
+   after the city is built — that's the internet building a special doorway).
+2. Open that address in your web browser, like: `http://<that-long-address>/`
+
+**What you'll see** (it's called *"Sysdig Event Generator"*):
+- 🔎 A **search box** and a **list of all 33 tricks**.
+- 🔴 / 🟠 A **colored dot** next to each trick — red means "very naughty," orange
+  means "kind of naughty."
+- 👆 **Click a trick** → it runs and the words stream onto the screen live.
+- 🕑 A **History** tab that shows every trick that's been done.
+- 🎬 A switch to also show the two big movie-length adventures (the chains).
+
+Then go to **Sysdig → Threats/Events** (filter `kubernetes.namespace.name =
+"sysevent"`) and watch the camera beep for the trick you just clicked! 🎉
+
+### ▶️ Way 2: the bastion command button (`run.sh`)
+
+Prefer typing? In the control room (bastion) there's a helper called **`run.sh`**
+(the bastion copies it to `~/sysevent/run.sh`):
 
 ```bash
 cd ~/sysevent
@@ -76,17 +108,18 @@ cd ~/sysevent
 ./run.sh everything                    # 5) do absolutely everything
 ```
 
-After you press a trick, go look in **Sysdig → Threats/Events** and filter to
+After either way, look in **Sysdig → Threats/Events** filtered to
 `kubernetes.namespace.name = "sysevent"`. You should see the camera's beeps! 🎉
 
 > 🧠 **Why do the tricks sometimes show an error?** That's normal! The robot only
 > needs to *try* the naughty thing for the camera to notice. It's like the camera
 > catching you *reaching* for the cookie jar — it doesn't matter if you actually
-> got a cookie. `run.sh` keeps going even when a trick "fails."
+> got a cookie. Both ways keep going even when a trick "fails."
 
-You can also peek at the robot's little web page (it has one) through the
-LoadBalancer address — ask Sysdig/your kubectl for the `sysevent` service's
-public hostname.
+> 🔓 **Grown-up note:** the web page is on a **public internet address** (a
+> LoadBalancer), and anyone who knows the address can click the tricks. That's
+> fine for a short demo, but turn the robot off (or switch the Service to
+> `ClusterIP`/`NodePort`) when you're done.
 
 ---
 
