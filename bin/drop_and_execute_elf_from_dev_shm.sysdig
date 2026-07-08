@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1620] Execute an ELF binary from /dev/shm: dropping and running a binary from the memory-backed tmpfs is a common evasion technique (the payload never lands on a normal filesystem). Several rules watch specifically for execution out of /dev/shm.\033[m"
+# SIMULATION ONLY: the 'dropped' ELF is just a copy of the system curl binary, so
+# nothing malicious runs. The detection fires on executing a newly-created ELF from
+# the /dev/shm memory-backed tmpfs, regardless of which ELF it is.
+SRC=$(command -v curl)
+cp "$SRC" /dev/shm/newelf 2>/dev/null
+chmod +x /dev/shm/newelf 2>/dev/null
+file /dev/shm/newelf 2>/dev/null | sed 's/^/  /'
+/dev/shm/newelf --version >/dev/null 2>&1 && echo "  (executed ELF from /dev/shm)" || echo "  (/dev/shm may be mounted noexec — the write+exec attempt is still the signal)"
+# Cleanup
+rm -f /dev/shm/newelf

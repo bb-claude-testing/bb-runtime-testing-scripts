@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1036.004] Masquerade as a kernel thread: a userland process renames itself with prctl(PR_SET_NAME) to a bracket kernel-thread name (e.g. [kworker/...]) to blend into ps/top/proc listings. Rootkits and implants use this to hide.\033[m"
+# SIMULATION ONLY: renames this process via prctl(PR_SET_NAME) to a kernel-thread-style
+# name. The detection rule watches for the prctl(PR_SET_NAME) syscall with a name starting
+# "[k" (argv[0] spoofing via 'exec -a' does NOT trigger it - it must be prctl). Harmless.
+python3 -c "import ctypes,time; ctypes.CDLL('libc.so.6').prctl(15, b'[kworker/0:2]', 0,0,0); time.sleep(1)"
+echo "  (set process name to '[kworker/0:2]' via prctl PR_SET_NAME)"

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1611] Container escape via cgroup release_agent: a privileged container mounts a cgroup controller and sets release_agent to run a program on the host when the last task in a cgroup exits - the classic notorious breakout primitive.\033[m"
+# SIMULATION ONLY: attempts the classic cgroup-v1 release_agent escape. On cgroup-v2 nodes
+# the legacy mount is unavailable, so it falls back to writing a release_agent-named file
+# directly - the detection keys on an open_write to */release_agent with CAP_SYS_ADMIN
+# (which a privileged container has), so it fires on both v1 and v2. Nothing runs on the host.
+mkdir -p /tmp/cgrp_escape 2>/dev/null
+if mount -t cgroup -o memory cgroup /tmp/cgrp_escape 2>/dev/null; then
+  echo 1 > /tmp/cgrp_escape/notify_on_release 2>/dev/null
+  echo "/tmp/sim-noop" > /tmp/cgrp_escape/release_agent 2>/dev/null
+  umount /tmp/cgrp_escape 2>/dev/null
+else
+  echo "/tmp/sim-noop" > /tmp/cgrp_escape/release_agent 2>/dev/null   # cgroup v2 fallback
+fi
+echo "  (release_agent write attempted - container-escape primitive)"
+rm -rf /tmp/cgrp_escape 2>/dev/null

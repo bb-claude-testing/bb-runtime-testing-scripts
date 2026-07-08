@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1222.002] Detect a hardlink being created over sensitive files\033[m"
+ln -f /etc/shadow /root/shadowfile
+# Cleanup: remove the hardlink so no extra path to /etc/shadow lingers
+rm -f /root/shadowfile

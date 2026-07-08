@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1574.006] Executing 'Modify ld.so.preload'. File /etc/ld.so.preload has been opened for writing. Possible hidden process attempt\033[m"
+echo '' > /etc/ld.so.preload
+# Cleanup: remove the file so repeated runs stay idempotent and no real preload lingers
+rm -f /etc/ld.so.preload

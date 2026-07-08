@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1611] Host namespace hijack via nsenter: entering PID 1's mount/network/PID namespaces to break out of the container onto the host. Requires --privileged or hostPID + CAP_SYS_ADMIN.\033[m"
+# SIMULATION ONLY: attempts to enter the host namespaces and run 'id'. Without the
+# required privileges the nsenter call is denied (fine -- the nsenter exec against PID 1
+# is the detection signal). Nothing runs on the host.
+if nsenter -t 1 -m -n -p -- id >/dev/null 2>&1; then
+  echo "  entered host namespaces (container escape succeeded!)"
+else
+  echo "  (nsenter denied -- needs --privileged / hostPID; the nsenter -t 1 attempt is the signal)"
+fi

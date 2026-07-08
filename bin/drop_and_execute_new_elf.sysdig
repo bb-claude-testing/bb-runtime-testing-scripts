@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1204.002] Drop and execute a new ELF binary in the container: a real ELF executable is written to a writable directory (not part of the image) and run. This 'drop-and-execute new binary' behavior is a strong compromise/drift signal.\033[m"
+# SIMULATION ONLY: the 'dropped' ELF is just a copy of the system curl binary, so
+# nothing malicious runs. The detection fires on the pattern of a newly-created ELF
+# being executed in the container, regardless of which ELF it is.
+SRC=$(command -v curl)
+cp "$SRC" /tmp/newelf 2>/dev/null
+chmod +x /tmp/newelf 2>/dev/null
+file /tmp/newelf 2>/dev/null | sed 's/^/  /'
+/tmp/newelf --version >/dev/null 2>&1
+echo "  (dropped and executed a new ELF at /tmp/newelf)"
+# Cleanup
+rm -f /tmp/newelf

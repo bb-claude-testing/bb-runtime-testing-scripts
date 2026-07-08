@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92mDetected reconnaissance script executing\033[m"
+whoami

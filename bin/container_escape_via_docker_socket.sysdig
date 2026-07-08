@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1611] Container escape via the container-runtime socket. A container that can reach the runtime control socket can launch privileged containers / run commands on the host. Docker runtime -> /var/run/docker.sock; managed k8s (EKS/AKS/GKE) uses containerd -> /run/containerd/containerd.sock.\033[m"
+# SIMULATION ONLY: touches whichever runtime socket is reachable. Docker's socket has an
+# OOTB Sysdig rule ('Container Escape via Docker Socket'); the containerd/CRI socket path
+# (managed k8s) has NO OOTB rule -> a suggested custom rule is in the coverage report.
+DOCKER_SOCK=/var/run/docker.sock
+CONTAINERD_SOCK=$(ls /var/run/containerd/containerd.sock /run/containerd/containerd.sock /host/run/containerd/containerd.sock 2>/dev/null | head -1)
+if [ -S "$DOCKER_SOCK" ]; then
+  curl -s -m2 --unix-socket "$DOCKER_SOCK" http://localhost/containers/json >/dev/null 2>&1
+  echo "  (accessed docker.sock - docker-runtime escape; OOTB rule applies)"
+elif [ -n "$CONTAINERD_SOCK" ]; then
+  curl -s -m2 --unix-socket "$CONTAINERD_SOCK" http://localhost/ >/dev/null 2>&1
+  echo "  (accessed containerd socket $CONTAINERD_SOCK - managed-k8s runtime escape; NO OOTB rule - see suggested custom rule)"
+else
+  echo "  (no container-runtime socket reachable on this node; nothing to do)"
+fi

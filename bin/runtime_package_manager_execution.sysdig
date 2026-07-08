@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1610] Container drift: running the OS package manager at runtime to install new software into a running container. Legitimate images should be immutable — a package install at runtime is a strong drift/compromise signal.\033[m"
+# Invoke the package manager to add a tool at runtime (the execve of apk/apt is the signal)
+# SIMULATION ONLY: uses the package manager's --simulate/dry-run mode. This runs
+# the apk/apt binary (the execve signal the detection watches for) WITHOUT actually
+# installing anything or modifying the container.
+if command -v apk >/dev/null 2>&1; then
+  apk add --simulate strace 2>/dev/null
+  echo "(ran 'apk add --simulate' at runtime — container-drift signal, nothing installed)"
+elif command -v apt-get >/dev/null 2>&1; then
+  apt-get install --simulate -y strace 2>/dev/null
+  echo "(ran 'apt-get install --simulate' at runtime — container-drift signal, nothing installed)"
+else
+  echo "(no package manager found)"
+fi

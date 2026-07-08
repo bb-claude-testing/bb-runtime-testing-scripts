@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1222] An attempt to modify any file below a set of binary directories\033[m"
+rm -f /bin/id2 ; cp /bin/id /bin/id2 2>/dev/null; /bin/id2 2>/dev/null
+# Cleanup: remove the copied binary
+rm -f /bin/id2

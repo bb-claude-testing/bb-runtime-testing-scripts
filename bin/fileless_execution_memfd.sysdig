@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1620] Fileless execution: a real ELF is loaded into an anonymous in-memory file (memfd_create) and executed directly from memory - never touching disk. This evades file-based scanning and is a hallmark of advanced loaders.\033[m"
+# SIMULATION ONLY: copies a real ELF (busybox) into an anonymous memfd and execve's it
+# directly, so the executed image itself is from memfd (proc.is_exe_from_memfd=true) - which
+# is what the rule requires. NOTE: putting a #!/bin/sh *script* in a memfd does NOT trigger
+# it (the interpreter becomes the exe); it must be an ELF executed from the memfd. Harmless
+# (busybox echo).
+python3 -c "import os
+fd=os.memfd_create('malware',0)
+os.write(fd, open('/bin/busybox','rb').read())
+os.execve('/proc/self/fd/%d'%fd, ['busybox','echo','fileless-elf-executed'], os.environ)"

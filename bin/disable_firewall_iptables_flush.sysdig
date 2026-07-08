@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1562.004] Impair defenses: flushing iptables rules to disable host/network firewalling. Attackers clear firewall rules to open outbound C2 channels or lateral movement. (Requires CAP_NET_ADMIN.)\033[m"
+if command -v iptables >/dev/null 2>&1; then
+  iptables -F 2>/dev/null && echo "iptables rules flushed" || echo "(iptables present but flush denied — needs --cap-add=NET_ADMIN)"
+else
+  echo "(iptables not installed — invoking nft/iptables path for detection)"
+  iptables -F 2>/dev/null
+fi

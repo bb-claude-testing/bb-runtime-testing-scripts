@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1219] Execution of a binary named like a known C2 / offensive tool (e.g. chisel, sliver-client). Many detections key on the process name of known attack tooling.\033[m"
+# SIMULATION ONLY: the 'C2' binaries are just copies of the system curl, so nothing
+# malicious runs -- the well-known tool NAME is the detection signal.
+SRC=$(command -v curl)
+for name in chisel sliver-client; do
+  cp "$SRC" /tmp/$name 2>/dev/null
+  chmod +x /tmp/$name 2>/dev/null
+  /tmp/$name --version >/dev/null 2>&1
+  echo "  (ran benign binary named '$name')"
+  rm -f /tmp/$name
+done

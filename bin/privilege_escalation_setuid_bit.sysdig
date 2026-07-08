@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1548.001] Privilege escalation via setuid bit: setting the setuid bit on a file is a classic privesc/persistence backdoor. The detection watches for the chmod u+s operation.\033[m"
+# SIMULATION ONLY: the setuid bit is applied to a harmless shell script. The Linux
+# kernel ignores the setuid bit on interpreted scripts, so this grants NO elevated
+# privileges -- it only produces the chmod-u+s signal the detection looks for.
+printf '#!/bin/sh\necho "setuid simulation"\n' > /tmp/setuid_demo
+chmod u+s /tmp/setuid_demo 2>/dev/null
+ls -l /tmp/setuid_demo 2>/dev/null
+# Cleanup
+rm -f /tmp/setuid_demo

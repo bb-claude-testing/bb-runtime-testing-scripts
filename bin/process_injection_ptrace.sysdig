@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1055.008] Process injection via ptrace: attaching to another running process to read or inject code. Attackers use PTRACE_ATTACH to hijack a victim process. (Requires CAP_SYS_PTRACE.)\033[m"
+# Attempt to ptrace-attach to PID 1; issues the ptrace(PTRACE_ATTACH) syscall that detection watches for
+python3 -c "
+import ctypes, os
+libc = ctypes.CDLL('libc.so.6', use_errno=True)
+PTRACE_ATTACH = 16
+r = libc.ptrace(PTRACE_ATTACH, 1, 0, 0)
+print('ptrace(PTRACE_ATTACH, 1) ->', r, '(EPERM without CAP_SYS_PTRACE)' if r != 0 else '(attached)')
+if r == 0:
+    libc.ptrace(17, 1, 0, 0)  # PTRACE_DETACH
+" 2>/dev/null

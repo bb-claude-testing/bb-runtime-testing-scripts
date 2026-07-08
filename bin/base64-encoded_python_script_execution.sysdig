@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo `date +"%Y-%m-%d %H:%M:%S"` "\e[92m[T1027 / T1059.006] Base64-encoded Python script execution. Attackers encode a Python payload in base64 to smuggle it past ASCII-only command lines and simple string matching, then decode and run it.\033[m"
+
+# SIMULATION ONLY: decodes a base64 Python payload to a file and executes it.
+# The payload is REAL Python that begins with 'import ' (a harmless sys.stdout.write) -
+# this matters: the Sysdig rule fires only when the base64 blob decodes to Python
+# (its condition looks for the base64 of "import " / "python3 -c" on the command line),
+# so a trivial print() payload would NOT trigger it. File-based (no inline exec/eval)
+# so it is representative and not quarantined by endpoint AV.
+python3 -c "import base64; open('/tmp/.b64_payload.py','wb').write(base64.b64decode('aW1wb3J0IHN5cwpzeXMuc3Rkb3V0LndyaXRlKCJiYXNlNjQtZW5jb2RlZCBweXRob24gc2NyaXB0IGV4ZWN1dGlvbiAtIHNpbXVsYXRpb24gb25seVxuIik='))"
+python3 /tmp/.b64_payload.py
+rm -f /tmp/.b64_payload.py

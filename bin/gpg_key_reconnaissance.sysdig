@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo -e `date +"%Y-%m-%d %H:%M:%S"` "\e[92mDetects reconnaissance attempts that try to locate GPG security keys using 'find' or 'grep' commands. An attacker could potentially identify and steal GPG security keys to gain unauthorized access to encrypted communications or files.\033[m"
+find ~ -name .gnupg >/dev/null
