@@ -227,6 +227,14 @@ workshop runs them in order:
   "security-playground" app to make it do naughty things, with different camera
   settings each time (normal, locked-down, drift-off, malware-off) so you can see
   how the rules change what gets caught.
+  - **New!** `01-01` now does **17** tricks, not 10 — steps **11–17** add a
+    reverse shell, a `curl | sh` download, a hidden base64 command, secret-
+    sniffing from other programs, a sneaky `ld.so.preload` file, reading the
+    cluster "door key" (ServiceAccount token), and poking program #1 with
+    `ptrace`. They use Sysdig's **built-in (managed) camera rules** — nothing
+    custom to set up. Just keep the **drift** and **malware** cameras on
+    **"just watch" (Detect)**, not **"block" (Prevent)**, or the bad guy gets
+    stopped before some cameras can beep.
 - **`02-01-example-curls-bucket-public.sh`** + `02-cfg-…irsa.yaml` — *Module 2.*
   Tricks the app into using a too-powerful cloud badge and poking cloud storage.
 - **`06-01-example-curls-networkpolicy.sh`** — *Module 6.* Tests the city's "who's
